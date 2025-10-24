@@ -20,6 +20,7 @@ import { Upload, Loader2, Mic, Square, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 
 interface CreateMeetingDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ interface CreateMeetingDialogProps {
 export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps) => {
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
   const [audioFile, setAudioFile] = useState<File | null>(null);
+  const [pastedText, setPastedText] = useState<string>("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const {
@@ -65,48 +67,62 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
 
   const createMutation = useMutation({
     mutationFn: async () => {
-      if (!audioFile || !selectedCustomer) {
-        throw new Error("音声ファイルと顧客を選択してください");
+      if ((!audioFile && !pastedText) || !selectedCustomer) {
+        throw new Error("入力データと顧客を選択してください");
       }
 
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("認証が必要です");
 
-      // 音声ファイルをアップロード
-      const fileExt = audioFile.name.split('.').pop();
-      const fileName = `${user.id}/${Date.now()}.${fileExt}`;
-      const { error: uploadError } = await supabase.storage
-        .from('meeting-audios')
-        .upload(fileName, audioFile);
+      let transcriptionText = "";
+      let audioUrl = null;
 
-      if (uploadError) throw uploadError;
+      // テキストが直接入力された場合
+      if (pastedText) {
+        transcriptionText = pastedText;
+      } 
+      // 音声ファイルがある場合
+      else if (audioFile) {
+        // 音声ファイルをアップロード
+        const fileExt = audioFile.name.split('.').pop();
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
+        const { error: uploadError } = await supabase.storage
+          .from('meeting-audios')
+          .upload(fileName, audioFile);
 
-      // 文字起こしと要約を実行
-      const { data: { publicUrl } } = supabase.storage
-        .from('meeting-audios')
-        .getPublicUrl(fileName);
+        if (uploadError) throw uploadError;
 
-      const reader = new FileReader();
-      const audioBase64 = await new Promise<string>((resolve) => {
-        reader.onloadend = () => {
-          const base64 = reader.result as string;
-          resolve(base64.split(',')[1]);
-        };
-        reader.readAsDataURL(audioFile);
-      });
+        // 公開URLを取得
+        const { data: { publicUrl } } = supabase.storage
+          .from('meeting-audios')
+          .getPublicUrl(fileName);
+        
+        audioUrl = publicUrl;
 
-      // 文字起こしAPI呼び出し
-      const { data: transcriptData, error: transcriptError } = await supabase.functions.invoke(
-        'transcribe-audio',
-        { body: { audio: audioBase64 } }
-      );
+        // Base64に変換
+        const reader = new FileReader();
+        const audioBase64 = await new Promise<string>((resolve) => {
+          reader.onloadend = () => {
+            const base64 = reader.result as string;
+            resolve(base64.split(',')[1]);
+          };
+          reader.readAsDataURL(audioFile);
+        });
 
-      if (transcriptError) throw transcriptError;
+        // 文字起こしAPI呼び出し
+        const { data: transcriptData, error: transcriptError } = await supabase.functions.invoke(
+          'transcribe-audio',
+          { body: { audio: audioBase64 } }
+        );
+
+        if (transcriptError) throw transcriptError;
+        transcriptionText = transcriptData.text;
+      }
 
       // 要約API呼び出し
       const { data: summaryData, error: summaryError } = await supabase.functions.invoke(
         'summarize-meeting',
-        { body: { text: transcriptData.text } }
+        { body: { text: transcriptionText } }
       );
 
       if (summaryError) throw summaryError;
@@ -117,8 +133,8 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
         .insert([{
           user_id: user.id,
           customer_id: selectedCustomer,
-          audio_url: publicUrl,
-          transcription: transcriptData.text,
+          audio_url: audioUrl,
+          transcription: transcriptionText,
           summary: summaryData.summary,
         }]);
 
@@ -131,6 +147,7 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
       });
       onClose();
       setAudioFile(null);
+      setPastedText("");
       setSelectedCustomer("");
     },
     onError: (error: any) => {
@@ -161,6 +178,7 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
   const handleDialogClose = () => {
     onClose();
     setAudioFile(null);
+    setPastedText("");
     setSelectedCustomer("");
     clearRecording();
   };
@@ -189,11 +207,12 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
           </div>
 
           <div className="space-y-2">
-            <Label>音声</Label>
+            <Label>入力方法</Label>
             <Tabs defaultValue="upload" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="upload">アップロード</TabsTrigger>
                 <TabsTrigger value="record">録音</TabsTrigger>
+                <TabsTrigger value="text">テキスト</TabsTrigger>
               </TabsList>
               
               <TabsContent value="upload" className="space-y-2">
@@ -263,6 +282,19 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
                   </div>
                 )}
               </TabsContent>
+
+              <TabsContent value="text" className="space-y-2">
+                <textarea
+                  value={pastedText}
+                  onChange={(e) => {
+                    setPastedText(e.target.value);
+                    setAudioFile(null);
+                    clearRecording();
+                  }}
+                  placeholder="商談内容をここに貼り付けてください..."
+                  className="w-full min-h-[200px] p-4 border-2 border-dashed rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </TabsContent>
             </Tabs>
           </div>
 
@@ -272,7 +304,7 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
             </Button>
             <Button
               onClick={() => createMutation.mutate()}
-              disabled={!audioFile || !selectedCustomer || createMutation.isPending}
+              disabled={(!audioFile && !pastedText) || !selectedCustomer || createMutation.isPending}
             >
               {createMutation.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               作成
