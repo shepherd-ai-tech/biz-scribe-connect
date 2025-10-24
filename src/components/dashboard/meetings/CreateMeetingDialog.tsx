@@ -134,9 +134,18 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
       setSelectedCustomer("");
     },
     onError: (error: any) => {
+      let errorMessage = error.message;
+      
+      // OpenAI APIクォータエラーの場合、わかりやすいメッセージに変換
+      if (error.message?.includes("quota") || error.message?.includes("insufficient_quota")) {
+        errorMessage = "OpenAI APIの使用制限に達しました。APIキーのクレジットを確認してください。";
+      } else if (error.message?.includes("Edge Function returned a non-2xx")) {
+        errorMessage = "処理中にエラーが発生しました。しばらく経ってから再度お試しください。";
+      }
+      
       toast({
         title: "エラー",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     },
