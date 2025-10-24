@@ -143,7 +143,132 @@ export const MeetingDetailDialog = ({ record, open, onClose }: MeetingDetailDial
             </div>
 
             <Tabs defaultValue="summary" className="w-full">
-...
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="summary">要約</TabsTrigger>
+                <TabsTrigger value="full">全文</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="summary" className="mt-4 space-y-4">
+                {record.summary ? (
+                  <>
+                    {(() => {
+                      const sections = parseStructuredSummary(record.summary);
+                      return (
+                        <>
+                          {sections.keyPoints && (
+                            <Card className="p-4 border-l-4 border-l-primary">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <h3 className="font-semibold text-primary">重要なポイント</h3>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopy(sections.keyPoints, 'keyPoints')}
+                                  className="h-8 px-2"
+                                >
+                                  {copiedSection === 'keyPoints' ? (
+                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
+                              <p className="whitespace-pre-wrap text-sm">{sections.keyPoints}</p>
+                            </Card>
+                          )}
+                          
+                          {sections.decisions && (
+                            <Card className="p-4 border-l-4 border-l-blue-500">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <h3 className="font-semibold text-blue-600">決定事項</h3>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopy(sections.decisions, 'decisions')}
+                                  className="h-8 px-2"
+                                >
+                                  {copiedSection === 'decisions' ? (
+                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
+                              <p className="whitespace-pre-wrap text-sm">{sections.decisions}</p>
+                            </Card>
+                          )}
+                          
+                          {sections.nextActions && (
+                            <Card className="p-4 border-l-4 border-l-orange-500">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <h3 className="font-semibold text-orange-600">次のアクション</h3>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopy(sections.nextActions, 'nextActions')}
+                                  className="h-8 px-2"
+                                >
+                                  {copiedSection === 'nextActions' ? (
+                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
+                              <p className="whitespace-pre-wrap text-sm">{sections.nextActions}</p>
+                            </Card>
+                          )}
+                          
+                          {sections.other && (
+                            <Card className="p-4">
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <h3 className="font-semibold">その他</h3>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCopy(sections.other, 'other')}
+                                  className="h-8 px-2"
+                                >
+                                  {copiedSection === 'other' ? (
+                                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                                  ) : (
+                                    <Copy className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
+                              <p className="whitespace-pre-wrap text-sm">{sections.other}</p>
+                            </Card>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </>
+                ) : (
+                  <Card className="p-6">
+                    <p className="text-muted-foreground">要約がありません</p>
+                  </Card>
+                )}
+              </TabsContent>
+
+              <TabsContent value="full" className="mt-4">
+                <Card className="p-6">
+                  <div className="flex items-start justify-between gap-2 mb-4">
+                    <h3 className="font-semibold">全文</h3>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleCopy(record.transcription || "", 'full')}
+                      className="h-8 px-2"
+                    >
+                      {copiedSection === 'full' ? (
+                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                      ) : (
+                        <Copy className="w-4 h-4" />
+                      )}
+                    </Button>
+                  </div>
+                  <p className="whitespace-pre-wrap text-sm">{record.transcription || "文字起こしがありません"}</p>
+                </Card>
+              </TabsContent>
             </Tabs>
 
             {record.customers?.email && (
