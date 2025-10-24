@@ -208,8 +208,11 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
 
           <div className="space-y-2">
             <Label>入力方法</Label>
+            {!selectedCustomer && (
+              <p className="text-sm text-muted-foreground">先に顧客を選択してください</p>
+            )}
             <Tabs defaultValue="upload" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className={`grid w-full grid-cols-3 ${!selectedCustomer ? 'pointer-events-none opacity-50' : ''}`}>
                 <TabsTrigger value="upload">アップロード</TabsTrigger>
                 <TabsTrigger value="record">録音</TabsTrigger>
                 <TabsTrigger value="text">テキスト</TabsTrigger>
@@ -222,10 +225,13 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
                   onChange={handleFileChange}
                   className="hidden"
                   id="audio-upload"
+                  disabled={!selectedCustomer}
                 />
                 <label
                   htmlFor="audio-upload"
-                  className="flex items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg cursor-pointer hover:bg-secondary transition-colors"
+                  className={`flex items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg transition-colors ${
+                    selectedCustomer ? 'cursor-pointer hover:bg-secondary' : 'cursor-not-allowed opacity-50'
+                  }`}
                 >
                   <Upload className="w-5 h-5" />
                   <span className="text-sm">
@@ -248,6 +254,7 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
                       size="lg"
                       onClick={isRecording ? stopRecording : startRecording}
                       className="gap-2"
+                      disabled={!selectedCustomer}
                     >
                       {isRecording ? (
                         <>
@@ -292,7 +299,8 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
                     clearRecording();
                   }}
                   placeholder="商談内容をここに貼り付けてください..."
-                  className="w-full min-h-[200px] p-4 border-2 border-dashed rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-primary"
+                  className="w-full min-h-[200px] p-4 border-2 border-dashed rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={!selectedCustomer}
                 />
               </TabsContent>
             </Tabs>
