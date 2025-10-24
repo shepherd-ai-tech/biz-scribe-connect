@@ -10,13 +10,20 @@ import {
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Upload, Loader2, Mic, Square, X } from "lucide-react";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Upload, Loader2, Mic, Square, X, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,6 +36,7 @@ interface CreateMeetingDialogProps {
 
 export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps) => {
   const [selectedCustomer, setSelectedCustomer] = useState<string>("");
+  const [openCustomerSelect, setOpenCustomerSelect] = useState(false);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [pastedText, setPastedText] = useState<string>("");
   const { toast } = useToast();
@@ -192,18 +200,51 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
         <div className="space-y-4">
           <div className="space-y-2">
             <Label>顧客</Label>
-            <Select value={selectedCustomer} onValueChange={setSelectedCustomer}>
-              <SelectTrigger>
-                <SelectValue placeholder="顧客を選択" />
-              </SelectTrigger>
-              <SelectContent>
-                {customers?.map((customer) => (
-                  <SelectItem key={customer.id} value={customer.id}>
-                    {customer.name} - {customer.company_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Popover open={openCustomerSelect} onOpenChange={setOpenCustomerSelect}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  role="combobox"
+                  aria-expanded={openCustomerSelect}
+                  className="w-full justify-between"
+                >
+                  {selectedCustomer
+                    ? customers?.find((customer) => customer.id === selectedCustomer)?.name + 
+                      " - " + 
+                      customers?.find((customer) => customer.id === selectedCustomer)?.company_name
+                    : "顧客を選択"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-full p-0">
+                <Command>
+                  <CommandInput placeholder="顧客名または会社名で検索..." />
+                  <CommandList>
+                    <CommandEmpty>顧客が見つかりません</CommandEmpty>
+                    <CommandGroup>
+                      {customers?.map((customer) => (
+                        <CommandItem
+                          key={customer.id}
+                          value={`${customer.name} ${customer.company_name}`}
+                          onSelect={() => {
+                            setSelectedCustomer(customer.id);
+                            setOpenCustomerSelect(false);
+                          }}
+                        >
+                          <Check
+                            className={cn(
+                              "mr-2 h-4 w-4",
+                              selectedCustomer === customer.id ? "opacity-100" : "opacity-0"
+                            )}
+                          />
+                          {customer.name} - {customer.company_name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
           </div>
 
           <div className="space-y-2">
