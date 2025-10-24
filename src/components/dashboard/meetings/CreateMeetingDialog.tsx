@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -16,8 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Upload, Loader2 } from "lucide-react";
+import { Upload, Loader2, Mic, Square, X } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAudioRecorder } from "@/hooks/useAudioRecorder";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface CreateMeetingDialogProps {
   open: boolean;
@@ -29,6 +31,25 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const {
+    isRecording,
+    recordedBlob,
+    recordingTime,
+    startRecording,
+    stopRecording,
+    clearRecording,
+    formatTime,
+  } = useAudioRecorder();
+
+  // 録音データをFileオブジェクトに変換
+  useEffect(() => {
+    if (recordedBlob) {
+      const file = new File([recordedBlob], `recording-${Date.now()}.webm`, {
+        type: 'audio/webm',
+      });
+      setAudioFile(file);
+    }
+  }, [recordedBlob]);
 
   const { data: customers } = useQuery({
     queryKey: ['customers'],
@@ -124,11 +145,19 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       setAudioFile(e.target.files[0]);
+      clearRecording();
     }
   };
 
+  const handleDialogClose = () => {
+    onClose();
+    setAudioFile(null);
+    setSelectedCustomer("");
+    clearRecording();
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>議事録を作成</DialogTitle>
@@ -151,29 +180,85 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
           </div>
 
           <div className="space-y-2">
-            <Label>音声ファイル</Label>
-            <div className="flex items-center gap-2">
-              <input
-                type="file"
-                accept="audio/*"
-                onChange={handleFileChange}
-                className="hidden"
-                id="audio-upload"
-              />
-              <label
-                htmlFor="audio-upload"
-                className="flex-1 flex items-center justify-center gap-2 p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-secondary transition-colors"
-              >
-                <Upload className="w-5 h-5" />
-                <span className="text-sm">
-                  {audioFile ? audioFile.name : "音声ファイルを選択"}
-                </span>
-              </label>
-            </div>
+            <Label>音声</Label>
+            <Tabs defaultValue="upload" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="upload">アップロード</TabsTrigger>
+                <TabsTrigger value="record">録音</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="upload" className="space-y-2">
+                <input
+                  type="file"
+                  accept="audio/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                  id="audio-upload"
+                />
+                <label
+                  htmlFor="audio-upload"
+                  className="flex items-center justify-center gap-2 p-6 border-2 border-dashed rounded-lg cursor-pointer hover:bg-secondary transition-colors"
+                >
+                  <Upload className="w-5 h-5" />
+                  <span className="text-sm">
+                    {audioFile && !recordedBlob ? audioFile.name : "音声ファイルを選択"}
+                  </span>
+                </label>
+              </TabsContent>
+              
+              <TabsContent value="record" className="space-y-3">
+                {!recordedBlob ? (
+                  <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed rounded-lg">
+                    {isRecording && (
+                      <div className="text-2xl font-mono font-bold text-destructive">
+                        {formatTime(recordingTime)}
+                      </div>
+                    )}
+                    <Button
+                      type="button"
+                      variant={isRecording ? "destructive" : "default"}
+                      size="lg"
+                      onClick={isRecording ? stopRecording : startRecording}
+                      className="gap-2"
+                    >
+                      {isRecording ? (
+                        <>
+                          <Square className="w-5 h-5" />
+                          停止
+                        </>
+                      ) : (
+                        <>
+                          <Mic className="w-5 h-5" />
+                          録音開始
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between p-4 border rounded-lg bg-secondary">
+                    <div className="flex items-center gap-2">
+                      <Mic className="w-5 h-5 text-muted-foreground" />
+                      <span className="text-sm">録音済み ({formatTime(recordingTime)})</span>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        clearRecording();
+                        setAudioFile(null);
+                      }}
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+            </Tabs>
           </div>
 
           <div className="flex gap-2 justify-end">
-            <Button type="button" variant="outline" onClick={onClose}>
+            <Button type="button" variant="outline" onClick={handleDialogClose}>
               キャンセル
             </Button>
             <Button
