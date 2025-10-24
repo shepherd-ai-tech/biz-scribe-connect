@@ -1,1 +1,10 @@
 project_id = "usitglnfpskrrzmidqzt"
+
+[functions.transcribe-audio]
+verify_jwt = true
+
+[functions.summarize-meeting]
+verify_jwt = true
+
+[functions.send-meeting-email]
+verify_jwt = true

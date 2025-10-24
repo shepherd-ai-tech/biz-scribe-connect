@@ -1,0 +1,86 @@
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+serve(async (req) => {
+  if (req.method === 'OPTIONS') {
+    return new Response('ok', { headers: corsHeaders });
+  }
+
+  try {
+    const { text } = await req.json();
+    
+    if (!text) {
+      throw new Error('文字起こしテキストが提供されていません');
+    }
+
+    console.log('要約生成を開始します');
+
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    if (!LOVABLE_API_KEY) {
+      throw new Error('LOVABLE_API_KEY が設定されていません');
+    }
+
+    // Lovable AIで要約を生成
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'google/gemini-2.5-flash',
+        messages: [
+          {
+            role: 'system',
+            content: '商談の議事録を簡潔に要約してください。重要なポイント、決定事項、次のアクションを明確に記載してください。'
+          },
+          {
+            role: 'user',
+            content: `以下の商談内容を要約してください：\n\n${text}`
+          }
+        ],
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 429) {
+        throw new Error('レート制限に達しました。しばらく待ってから再試行してください。');
+      }
+      if (response.status === 402) {
+        throw new Error('Lovable AIの利用可能クレジットが不足しています。');
+      }
+      const errorText = await response.text();
+      console.error('Lovable AIエラー:', response.status, errorText);
+      throw new Error(`Lovable AIエラー: ${errorText}`);
+    }
+
+    const result = await response.json();
+    const summary = result.choices?.[0]?.message?.content;
+
+    if (!summary) {
+      throw new Error('要約の生成に失敗しました');
+    }
+
+    console.log('要約生成完了');
+
+    return new Response(
+      JSON.stringify({ summary }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
+  } catch (error) {
+    console.error('要約エラー:', error);
+    const errorMessage = error instanceof Error ? error.message : '不明なエラー';
+    return new Response(
+      JSON.stringify({ error: errorMessage }),
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      }
+    );
+  }
+});
