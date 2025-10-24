@@ -260,6 +260,7 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
               </TabsList>
               
               <TabsContent value="upload" className="space-y-2">
+                <p className="text-xs text-muted-foreground">※ ファイルサイズは20MBまで</p>
                 <input
                   type="file"
                   accept="audio/*"
@@ -282,6 +283,7 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
               </TabsContent>
               
               <TabsContent value="record" className="space-y-3">
+                <p className="text-xs text-muted-foreground">※ 録音時間は60分まで推奨</p>
                 {!recordedBlob ? (
                   <div className="flex flex-col items-center gap-3 p-6 border-2 border-dashed rounded-lg">
                     {isRecording && (
@@ -332,6 +334,7 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
               </TabsContent>
 
               <TabsContent value="text" className="space-y-2">
+                <p className="text-xs text-muted-foreground">※ テキストは10,000文字まで推奨</p>
                 <textarea
                   value={pastedText}
                   onChange={(e) => {
@@ -342,7 +345,9 @@ export const CreateMeetingDialog = ({ open, onClose }: CreateMeetingDialogProps)
                   placeholder="商談内容をここに貼り付けてください..."
                   className="w-full min-h-[200px] p-4 border-2 border-dashed rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-primary disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={!selectedCustomer}
+                  maxLength={10000}
                 />
+                <p className="text-xs text-muted-foreground text-right">{pastedText.length} / 10,000文字</p>
               </TabsContent>
             </Tabs>
           </div>
