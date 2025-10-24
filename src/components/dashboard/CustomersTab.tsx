@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, Search } from "lucide-react";
 import { CustomerList } from "./customers/CustomerList";
 import { CustomerDialog } from "./customers/CustomerDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -10,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 export const CustomersTab = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState("");
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -66,6 +68,15 @@ export const CustomersTab = () => {
     setEditingCustomer(null);
   };
 
+  const filteredCustomers = (customers || []).filter((customer) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      customer.name.toLowerCase().includes(query) ||
+      customer.company_name.toLowerCase().includes(query) ||
+      customer.email?.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -79,8 +90,18 @@ export const CustomersTab = () => {
         </Button>
       </div>
 
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="顧客名、会社名、メールアドレスで検索..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
       <CustomerList
-        customers={customers || []}
+        customers={filteredCustomers}
         isLoading={isLoading}
         onEdit={handleEdit}
         onDelete={handleDelete}

@@ -2,12 +2,14 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Plus, Search } from "lucide-react";
 import { MeetingRecordList } from "./meetings/MeetingRecordList";
 import { CreateMeetingDialog } from "./meetings/CreateMeetingDialog";
 
 export const MeetingRecordsTab = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const { data: records, isLoading } = useQuery({
     queryKey: ['meeting-records'],
@@ -30,6 +32,16 @@ export const MeetingRecordsTab = () => {
     },
   });
 
+  const filteredRecords = (records || []).filter((record) => {
+    const query = searchQuery.toLowerCase();
+    return (
+      record.customers?.name.toLowerCase().includes(query) ||
+      record.customers?.company_name.toLowerCase().includes(query) ||
+      record.summary?.toLowerCase().includes(query) ||
+      record.transcription?.toLowerCase().includes(query)
+    );
+  });
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -43,7 +55,17 @@ export const MeetingRecordsTab = () => {
         </Button>
       </div>
 
-      <MeetingRecordList records={records || []} isLoading={isLoading} />
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+        <Input
+          placeholder="顧客名、会社名、議事録の内容で検索..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
+      </div>
+
+      <MeetingRecordList records={filteredRecords} isLoading={isLoading} />
 
       <CreateMeetingDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
     </div>
