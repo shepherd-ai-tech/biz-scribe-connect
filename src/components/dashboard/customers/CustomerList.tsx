@@ -1,6 +1,15 @@
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mail, Building2, Edit, Trash2 } from "lucide-react";
+import { Mail, Building2, Trash2, FileText, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { format } from "date-fns";
+import { ja } from "date-fns/locale";
+
+interface MeetingRecord {
+  id: string;
+  created_at: string;
+  summary: string | null;
+}
 
 interface Customer {
   id: string;
@@ -8,6 +17,7 @@ interface Customer {
   company_name: string;
   email: string | null;
   created_at: string;
+  meeting_records?: MeetingRecord[];
 }
 
 interface CustomerListProps {
@@ -42,45 +52,68 @@ export const CustomerList = ({ customers, isLoading, onEdit, onDelete }: Custome
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-      {customers.map((customer) => (
-        <Card key={customer.id} className="p-6 hover:shadow-md transition-shadow">
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold text-lg">{customer.name}</h3>
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                <Building2 className="w-4 h-4" />
-                <span>{customer.company_name}</span>
-              </div>
-              {customer.email && (
-                <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                  <Mail className="w-4 h-4" />
-                  <span>{customer.email}</span>
+      {customers.map((customer) => {
+        const meetingRecords = customer.meeting_records || [];
+        const latestRecord = meetingRecords.length > 0 
+          ? meetingRecords.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())[0]
+          : null;
+        
+        return (
+          <Card 
+            key={customer.id} 
+            className="cursor-pointer hover:bg-secondary/50 transition-colors"
+            onClick={() => onEdit(customer)}
+          >
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between">
+                <div className="space-y-1 flex-1">
+                  <div className="flex items-center gap-2">
+                    <User className="w-4 h-4 text-muted-foreground" />
+                    <h3 className="font-semibold">{customer.name}</h3>
+                    <Badge variant="secondary" className="ml-2">
+                      <FileText className="w-3 h-3 mr-1" />
+                      {meetingRecords.length}件
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Building2 className="w-3 h-3" />
+                    <span>{customer.company_name}</span>
+                  </div>
+                  {customer.email && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Mail className="w-3 h-3" />
+                      <span>{customer.email}</span>
+                    </div>
+                  )}
                 </div>
-              )}
-            </div>
-            
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onEdit(customer)}
-                className="flex-1"
-              >
-                <Edit className="w-4 h-4 mr-1" />
-                編集
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => onDelete(customer.id)}
-                className="text-destructive hover:text-destructive"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </Card>
-      ))}
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete(customer.id);
+                  }}
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </div>
+            </CardHeader>
+            {latestRecord && (
+              <CardContent className="pt-0">
+                <div className="bg-muted/50 rounded-lg p-3 space-y-1">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <FileText className="w-3 h-3" />
+                    <span>最新の議事録</span>
+                    <span>•</span>
+                    <span>{format(new Date(latestRecord.created_at), "yyyy/MM/dd", { locale: ja })}</span>
+                  </div>
+                  <p className="text-sm line-clamp-2">{latestRecord.summary}</p>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        );
+      })}
     </div>
   );
 };

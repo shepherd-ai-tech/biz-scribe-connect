@@ -21,13 +21,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
 import { MeetingDetailDialog } from "../meetings/MeetingDetailDialog";
 import { useState } from "react";
+import { Separator } from "@/components/ui/separator";
 
 const formSchema = z.object({
   name: z.string().min(1, "氏名を入力してください").max(100),
@@ -139,13 +139,9 @@ export const CustomerDialog = ({ open, onClose, customer }: CustomerDialogProps)
         </DialogHeader>
         
         {customer ? (
-          <Tabs defaultValue="info" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="info">基本情報</TabsTrigger>
-              <TabsTrigger value="meetings">議事録</TabsTrigger>
-            </TabsList>
-            
-            <TabsContent value="info" className="space-y-4">
+          <div className="space-y-6">
+            <div>
+              <h3 className="text-lg font-semibold mb-4">基本情報</h3>
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                   <FormField
@@ -197,9 +193,12 @@ export const CustomerDialog = ({ open, onClose, customer }: CustomerDialogProps)
                   </div>
                 </form>
               </Form>
-            </TabsContent>
-            
-            <TabsContent value="meetings" className="space-y-4">
+            </div>
+
+            <Separator />
+
+            <div>
+              <h3 className="text-lg font-semibold mb-4">議事録履歴</h3>
               {meetingRecords && meetingRecords.length > 0 ? (
                 <div className="space-y-3">
                   {meetingRecords.map((record) => (
@@ -230,8 +229,8 @@ export const CustomerDialog = ({ open, onClose, customer }: CustomerDialogProps)
                   この顧客の議事録はまだありません
                 </div>
               )}
-            </TabsContent>
-          </Tabs>
+            </div>
+          </div>
         ) : (
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">

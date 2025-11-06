@@ -20,7 +20,14 @@ export const CustomersTab = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('customers')
-        .select('*')
+        .select(`
+          *,
+          meeting_records (
+            id,
+            created_at,
+            summary
+          )
+        `)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
