@@ -26,6 +26,8 @@ import { Card } from "@/components/ui/card";
 import { FileText } from "lucide-react";
 import { format } from "date-fns";
 import { ja } from "date-fns/locale";
+import { MeetingDetailDialog } from "../meetings/MeetingDetailDialog";
+import { useState } from "react";
 
 const formSchema = z.object({
   name: z.string().min(1, "氏名を入力してください").max(100),
@@ -42,6 +44,7 @@ interface CustomerDialogProps {
 export const CustomerDialog = ({ open, onClose, customer }: CustomerDialogProps) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [selectedRecord, setSelectedRecord] = useState<any>(null);
 
   const { data: meetingRecords } = useQuery({
     queryKey: ['customer-meetings', customer?.id],
@@ -200,7 +203,14 @@ export const CustomerDialog = ({ open, onClose, customer }: CustomerDialogProps)
               {meetingRecords && meetingRecords.length > 0 ? (
                 <div className="space-y-3">
                   {meetingRecords.map((record) => (
-                    <Card key={record.id} className="p-4 hover:bg-secondary transition-colors cursor-pointer">
+                    <Card 
+                      key={record.id} 
+                      className="p-4 hover:bg-secondary transition-colors cursor-pointer"
+                      onClick={() => setSelectedRecord({
+                        ...record,
+                        customers: customer
+                      })}
+                    >
                       <div className="flex items-start gap-3">
                         <FileText className="w-5 h-5 text-muted-foreground mt-1" />
                         <div className="flex-1 min-w-0">
@@ -275,6 +285,12 @@ export const CustomerDialog = ({ open, onClose, customer }: CustomerDialogProps)
             </form>
           </Form>
         )}
+
+        <MeetingDetailDialog
+          record={selectedRecord}
+          open={!!selectedRecord}
+          onClose={() => setSelectedRecord(null)}
+        />
       </DialogContent>
     </Dialog>
   );
