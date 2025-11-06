@@ -119,7 +119,7 @@ export const CustomersTab = () => {
         className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 z-50"
         size="icon"
       >
-        <UserPlus className="w-6 h-6" />
+        <UserPlus className="w-8 h-8" />
       </Button>
     </div>
   );
