@@ -6,6 +6,15 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// タイムスタンプを HH:MM:SS 形式にフォーマット
+function formatTimestamp(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
@@ -33,6 +42,8 @@ serve(async (req) => {
     formData.append('file', blob, 'audio.webm');
     formData.append('model', 'whisper-1');
     formData.append('language', 'ja');
+    formData.append('response_format', 'verbose_json');
+    formData.append('timestamp_granularities[]', 'segment');
 
     // OpenAI Whisper APIに送信
     const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
@@ -52,8 +63,20 @@ serve(async (req) => {
     const result = await response.json();
     console.log('文字起こし完了');
 
+    // セグメントごとにタイムスタンプ付きテキストを生成
+    let formattedText = '';
+    if (result.segments && Array.isArray(result.segments)) {
+      for (const segment of result.segments) {
+        const startTime = formatTimestamp(segment.start);
+        formattedText += `${startTime}　話者：\n${segment.text.trim()}\n\n`;
+      }
+    } else {
+      // フォールバック: セグメントがない場合は通常のテキストを返す
+      formattedText = result.text;
+    }
+
     return new Response(
-      JSON.stringify({ text: result.text }),
+      JSON.stringify({ text: formattedText.trim() }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
