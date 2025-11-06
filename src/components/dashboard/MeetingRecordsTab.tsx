@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { FileText, Search } from "lucide-react";
 import { MeetingRecordList } from "./meetings/MeetingRecordList";
 import { CreateMeetingDialog } from "./meetings/CreateMeetingDialog";
 
@@ -43,16 +43,10 @@ export const MeetingRecordsTab = () => {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">議事録一覧</h2>
-          <p className="text-muted-foreground">商談の議事録を管理します</p>
-        </div>
-        <Button onClick={() => setDialogOpen(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          議事録を作成
-        </Button>
+    <div className="space-y-6 relative pb-20">
+      <div>
+        <h2 className="text-2xl font-bold">議事録一覧</h2>
+        <p className="text-muted-foreground">商談の議事録を管理します</p>
       </div>
 
       <div className="relative">
@@ -68,6 +62,14 @@ export const MeetingRecordsTab = () => {
       <MeetingRecordList records={filteredRecords} isLoading={isLoading} />
 
       <CreateMeetingDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
+
+      <Button
+        onClick={() => setDialogOpen(true)}
+        className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 z-50"
+        size="icon"
+      >
+        <FileText className="w-6 h-6" />
+      </Button>
     </div>
   );
 };

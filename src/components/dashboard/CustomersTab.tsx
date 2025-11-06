@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Plus, Search } from "lucide-react";
+import { UserPlus, Search } from "lucide-react";
 import { CustomerList } from "./customers/CustomerList";
 import { CustomerDialog } from "./customers/CustomerDialog";
 import { useToast } from "@/hooks/use-toast";
@@ -85,16 +85,10 @@ export const CustomersTab = () => {
   });
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">顧客管理</h2>
-          <p className="text-muted-foreground">顧客情報を管理します</p>
-        </div>
-        <Button onClick={() => setDialogOpen(true)} className="gap-2">
-          <Plus className="w-4 h-4" />
-          顧客を追加
-        </Button>
+    <div className="space-y-6 relative pb-20">
+      <div>
+        <h2 className="text-2xl font-bold">顧客管理</h2>
+        <p className="text-muted-foreground">顧客情報を管理します</p>
       </div>
 
       <div className="relative">
@@ -119,6 +113,14 @@ export const CustomersTab = () => {
         onClose={handleDialogClose}
         customer={editingCustomer}
       />
+
+      <Button
+        onClick={() => setDialogOpen(true)}
+        className="fixed bottom-8 right-8 h-14 w-14 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 z-50"
+        size="icon"
+      >
+        <UserPlus className="w-6 h-6" />
+      </Button>
     </div>
   );
 };
