@@ -23,7 +23,7 @@ export const AuthPage = () => {
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-primary mb-4 shadow-lg">
             <Mic className="w-8 h-8 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold mb-2">商談議事録管理</h1>
+          <h1 className="text-3xl font-bold mb-2">DEKISUGIKUN</h1>
           <p className="text-muted-foreground">
             音声から自動で議事録を作成し、顧客管理を効率化
           </p>
