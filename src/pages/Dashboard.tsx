@@ -2,19 +2,29 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, FileText, CreditCard } from "lucide-react";
+import { LogOut, Users, FileText, AlertCircle } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomersTab } from "@/components/dashboard/CustomersTab";
 import { MeetingRecordsTab } from "@/components/dashboard/MeetingRecordsTab";
-import { PaymentsTab } from "@/components/dashboard/PaymentsTab";
+import { usePayment } from "@/contexts/PaymentContext";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const { hasAccess, paymentStatus } = usePayment();
 
   useEffect(() => {
     checkUser();
   }, []);
+
+  useEffect(() => {
+    // 支払いが完了していない場合、支払い設定ページへリダイレクト
+    if (!loading && !paymentStatus.loading && !hasAccess) {
+      navigate("/payment-setup");
+    }
+  }, [hasAccess, loading, paymentStatus.loading, navigate]);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -29,12 +39,17 @@ export default function Dashboard() {
     navigate("/");
   };
 
-  if (loading) {
+  if (loading || paymentStatus.loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <Loader2 className="w-12 h-12 animate-spin text-primary" />
       </div>
     );
+  }
+
+  // 支払いが完了していない場合は何も表示しない（リダイレクト処理中）
+  if (!hasAccess) {
+    return null;
   }
 
   return (
@@ -51,7 +66,7 @@ export default function Dashboard() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="records" className="w-full">
-          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-8">
+          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
             <TabsTrigger value="records" className="gap-2">
               <FileText className="w-4 h-4" />
               議事録
@@ -59,10 +74,6 @@ export default function Dashboard() {
             <TabsTrigger value="customers" className="gap-2">
               <Users className="w-4 h-4" />
               顧客管理
-            </TabsTrigger>
-            <TabsTrigger value="payments" className="gap-2">
-              <CreditCard className="w-4 h-4" />
-              支払い
             </TabsTrigger>
           </TabsList>
 
@@ -72,10 +83,6 @@ export default function Dashboard() {
 
           <TabsContent value="customers">
             <CustomersTab />
-          </TabsContent>
-
-          <TabsContent value="payments">
-            <PaymentsTab />
           </TabsContent>
         </Tabs>
       </main>

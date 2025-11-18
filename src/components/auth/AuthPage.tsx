@@ -11,7 +11,7 @@ export const AuthPage = () => {
   useEffect(() => {
     supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate("/dashboard");
+        navigate("/payment-setup");
       }
     });
   }, [navigate]);
