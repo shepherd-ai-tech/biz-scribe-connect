@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.check-subscription]
 verify_jwt = true
+
+[functions.setup-promotion-code]
+verify_jwt = false
