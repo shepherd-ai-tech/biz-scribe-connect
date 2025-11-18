@@ -2,10 +2,11 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, FileText, Plus } from "lucide-react";
+import { LogOut, Users, FileText, CreditCard } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomersTab } from "@/components/dashboard/CustomersTab";
 import { MeetingRecordsTab } from "@/components/dashboard/MeetingRecordsTab";
+import { PaymentsTab } from "@/components/dashboard/PaymentsTab";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -50,7 +51,7 @@ export default function Dashboard() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="records" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+          <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-8">
             <TabsTrigger value="records" className="gap-2">
               <FileText className="w-4 h-4" />
               議事録
@@ -58,6 +59,10 @@ export default function Dashboard() {
             <TabsTrigger value="customers" className="gap-2">
               <Users className="w-4 h-4" />
               顧客管理
+            </TabsTrigger>
+            <TabsTrigger value="payments" className="gap-2">
+              <CreditCard className="w-4 h-4" />
+              支払い
             </TabsTrigger>
           </TabsList>
 
@@ -67,6 +72,10 @@ export default function Dashboard() {
 
           <TabsContent value="customers">
             <CustomersTab />
+          </TabsContent>
+
+          <TabsContent value="payments">
+            <PaymentsTab />
           </TabsContent>
         </Tabs>
       </main>
