@@ -19,14 +19,12 @@ serve(async (req) => {
 
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
   try {
     logStep("サブスクリプションチェック開始");
-
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEYが設定されていません");
 
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("認証ヘッダーがありません");
@@ -38,6 +36,30 @@ serve(async (req) => {
     if (!user?.email) throw new Error("ユーザーが認証されていません");
 
     logStep("ユーザー認証完了", { userId: user.id, email: user.email });
+
+    // ホワイトリストチェック
+    const { data: whitelistData, error: whitelistError } = await supabaseClient
+      .from("whitelisted_users")
+      .select("email")
+      .eq("email", user.email)
+      .maybeSingle();
+
+    if (whitelistData) {
+      logStep("ホワイトリストユーザー検出", { email: user.email });
+      return new Response(JSON.stringify({
+        subscribed: true,
+        initial_payment_completed: true,
+        whitelisted: true
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    logStep("ホワイトリストに未登録、Stripeチェック開始");
+
+    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
+    if (!stripeKey) throw new Error("STRIPE_SECRET_KEYが設定されていません");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
