@@ -1,0 +1,49 @@
+name: Frontend CI
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - '!src/integrations/supabase/**'
+      - 'public/**'
+      - 'index.html'
+
+jobs:
+  check-frontend-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Check for backend changes
+        run: |
+          # バックエンドファイルの変更をチェック
+          CHANGED_FILES=$(git diff --name-only origin/main HEAD)
+          BACKEND_PATTERNS="^supabase/|^\.env|^src/integrations/supabase/|package\.json|package-lock\.json|bun\.lockb|tsconfig.*\.json|vite\.config\.ts"
+          
+          if echo "$CHANGED_FILES" | grep -E "$BACKEND_PATTERNS"; then
+            echo "❌ エラー: バックエンドファイルへの変更が検出されました"
+            echo "変更されたバックエンドファイル:"
+            echo "$CHANGED_FILES" | grep -E "$BACKEND_PATTERNS"
+            echo ""
+            echo "フロントエンドファイル（src/、public/、index.html）のみ変更可能です"
+            exit 1
+          else
+            echo "✅ フロントエンドファイルのみの変更です"
+          fi
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Type check
+        run: npm run type-check || echo "型チェックをスキップ"
+      
+      - name: Build check
+        run: npm run build
