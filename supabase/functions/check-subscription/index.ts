@@ -39,6 +39,31 @@ serve(async (req) => {
 
     logStep("ユーザー認証完了", { userId: user.id, email: user.email });
 
+    // ホワイトリストをチェック
+    const { data: whitelistData, error: whitelistError } = await supabaseClient
+      .from('whitelisted_users')
+      .select('email')
+      .eq('email', user.email)
+      .maybeSingle();
+
+    if (whitelistError) {
+      logStep("ホワイトリストチェックエラー", { error: whitelistError.message });
+    }
+
+    if (whitelistData) {
+      logStep("ホワイトリストユーザーが見つかりました - アクセス許可", { email: user.email });
+      return new Response(JSON.stringify({
+        subscribed: true,
+        initial_payment_completed: true,
+        subscription_end: null
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    logStep("ホワイトリストに見つかりませんでした - Stripeチェックを続行");
+
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     
