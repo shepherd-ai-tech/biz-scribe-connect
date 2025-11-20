@@ -1,73 +1,73 @@
-# Welcome to your Lovable project
+# DEKISUGIKUN - 商談議事録管理システム
 
-## Project info
+## プロジェクト概要
+
+商談の議事録を効率的に管理するためのWebアプリケーションです。
 
 **URL**: https://lovable.dev/projects/348bcebf-e5cf-4df7-9982-acfe05a61a59
 
-## How can I edit this code?
+## 開発環境のセットアップ
 
-There are several ways of editing your application.
+### 必要な環境
 
-**Use Lovable**
+- Node.js & npm - [nvmでインストール](https://github.com/nvm-sh/nvm#installing-and-updating)
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/348bcebf-e5cf-4df7-9982-acfe05a61a59) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
+### セットアップ手順
 
 ```sh
-# Step 1: Clone the repository using the project's Git URL.
+# ステップ1: リポジトリをクローン
 git clone <YOUR_GIT_URL>
 
-# Step 2: Navigate to the project directory.
+# ステップ2: プロジェクトディレクトリに移動
 cd <YOUR_PROJECT_NAME>
 
-# Step 3: Install the necessary dependencies.
+# ステップ3: 依存関係をインストール
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# ステップ4: 開発サーバーを起動
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+## 使用技術
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
+このプロジェクトは以下の技術で構築されています：
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+- Supabase（バックエンド）
+- Stripe（決済）
 
-## How can I deploy this project?
+## ファイルの編集方法
 
-Simply open [Lovable](https://lovable.dev/projects/348bcebf-e5cf-4df7-9982-acfe05a61a59) and click on Share -> Publish.
+### GitHubで直接編集
 
-## Can I connect a custom domain to my Lovable project?
+- 編集したいファイルに移動
+- 右上の「Edit」ボタン（鉛筆アイコン）をクリック
+- 変更を加えてコミット
 
-Yes, you can!
+### GitHub Codespacesを使用
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- リポジトリのメインページに移動
+- 右上の「Code」ボタン（緑色）をクリック
+- 「Codespaces」タブを選択
+- 「New codespace」をクリックして新しい環境を起動
+- Codespace内で直接ファイルを編集し、変更をコミット＆プッシュ
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+## デプロイ
+
+フロントエンドの変更をデプロイするには、プロジェクトのPublishボタンをクリックして「Update」を実行してください。
+
+バックエンドの変更（Edge Functions、データベースマイグレーションなど）は自動的にデプロイされます。
+
+## カスタムドメインの接続
+
+カスタムドメイン（例：yourdomain.com）やサブドメイン（例：subdomain.yourdomain.com）を接続できます。
+
+プロジェクト設定のDomainsセクションから設定してください。
+
+## ライセンスとサポート
+
+本プロジェクトは商用利用を目的としています。技術的なサポートが必要な場合は、開発チームにお問い合わせください。
