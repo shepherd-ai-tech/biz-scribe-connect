@@ -2,23 +2,23 @@
 # これらのファイルへの変更は、指定された所有者の承認が必要です
 
 # Supabase関連（Edge Functions、マイグレーション、設定）
-/supabase/ @YOUR_GITHUB_USERNAME
+/supabase/ @shepherd-ai-tech
 
 # 環境変数とシークレット
-/.env @YOUR_GITHUB_USERNAME
-/.env.* @YOUR_GITHUB_USERNAME
+/.env @shepherd-ai-tech
+/.env.* @shepherd-ai-tech
 
 # パッケージ管理（バックエンド依存関係の変更を制限）
-/package.json @YOUR_GITHUB_USERNAME
-/package-lock.json @YOUR_GITHUB_USERNAME
-/bun.lockb @YOUR_GITHUB_USERNAME
+/package.json @shepherd-ai-tech
+/package-lock.json @shepherd-ai-tech
+/bun.lockb @shepherd-ai-tech
 
 # TypeScript設定（型安全性の維持）
-/tsconfig*.json @YOUR_GITHUB_USERNAME
+/tsconfig*.json @shepherd-ai-tech
 
 # Supabase型定義（自動生成ファイル）
-/src/integrations/supabase/ @YOUR_GITHUB_USERNAME
+/src/integrations/supabase/ @shepherd-ai-tech
 
 # 重要な設定ファイル
-/vite.config.ts @YOUR_GITHUB_USERNAME
-/components.json @YOUR_GITHUB_USERNAME
+/vite.config.ts @shepherd-ai-tech
+/components.json @shepherd-ai-tech
