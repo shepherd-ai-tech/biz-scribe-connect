@@ -2,17 +2,18 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, FileText, AlertCircle } from "lucide-react";
+import { LogOut, Users, FileText, Shield } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomersTab } from "@/components/dashboard/CustomersTab";
 import { MeetingRecordsTab } from "@/components/dashboard/MeetingRecordsTab";
+import { AdminWhitelistTab } from "@/components/dashboard/AdminWhitelistTab";
 import { usePayment } from "@/contexts/PaymentContext";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [isAdmin, setIsAdmin] = useState(false);
   const { hasAccess, paymentStatus } = usePayment();
 
   useEffect(() => {
@@ -30,6 +31,16 @@ export default function Dashboard() {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) {
       navigate("/");
+    } else {
+      // 管理者権限をチェック
+      const { data: roleData } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .eq('role', 'admin')
+        .maybeSingle();
+      
+      setIsAdmin(!!roleData);
     }
     setLoading(false);
   };
@@ -66,7 +77,7 @@ export default function Dashboard() {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="records" className="w-full">
-          <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8">
+          <TabsList className={`grid w-full max-w-md mx-auto mb-8 ${isAdmin ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <TabsTrigger value="records" className="gap-2">
               <FileText className="w-4 h-4" />
               議事録
@@ -75,6 +86,12 @@ export default function Dashboard() {
               <Users className="w-4 h-4" />
               顧客管理
             </TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="whitelist" className="gap-2">
+                <Shield className="w-4 h-4" />
+                管理者
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="records">
@@ -84,6 +101,12 @@ export default function Dashboard() {
           <TabsContent value="customers">
             <CustomersTab />
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="whitelist">
+              <AdminWhitelistTab />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>
