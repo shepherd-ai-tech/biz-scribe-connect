@@ -19,19 +19,18 @@ jobs:
       
       - name: Check for backend changes
         run: |
-          # バックエンドファイルの変更をチェック
           CHANGED_FILES=$(git diff --name-only origin/main HEAD)
           BACKEND_PATTERNS="^supabase/|^\.env|^src/integrations/supabase/|package\.json|package-lock\.json|bun\.lockb|tsconfig.*\.json|vite\.config\.ts"
           
           if echo "$CHANGED_FILES" | grep -E "$BACKEND_PATTERNS"; then
-            echo "❌ エラー: バックエンドファイルへの変更が検出されました"
-            echo "変更されたバックエンドファイル:"
+            echo "Error: Backend file changes detected"
+            echo "Changed backend files:"
             echo "$CHANGED_FILES" | grep -E "$BACKEND_PATTERNS"
             echo ""
-            echo "フロントエンドファイル（src/、public/、index.html）のみ変更可能です"
+            echo "Only frontend files (src/, public/, index.html) can be modified"
             exit 1
           else
-            echo "✅ フロントエンドファイルのみの変更です"
+            echo "Frontend-only changes verified"
           fi
       
       - name: Setup Node.js

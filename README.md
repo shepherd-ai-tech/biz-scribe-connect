@@ -4,8 +4,6 @@
 
 商談の議事録を効率的に管理するためのWebアプリケーションです。
 
-**URL**: https://lovable.dev/projects/348bcebf-e5cf-4df7-9982-acfe05a61a59
-
 ## 開発環境のセットアップ
 
 ### 必要な環境
@@ -58,15 +56,36 @@ npm run dev
 
 ## デプロイ
 
-フロントエンドの変更をデプロイするには、プロジェクトのPublishボタンをクリックして「Update」を実行してください。
+### フロントエンド
 
-バックエンドの変更（Edge Functions、データベースマイグレーションなど）は自動的にデプロイされます。
+Vercel、Netlify、またはその他のホスティングサービスを使用してデプロイできます。
 
-## カスタムドメインの接続
+```sh
+# ビルド
+npm run build
 
-カスタムドメイン（例：yourdomain.com）やサブドメイン（例：subdomain.yourdomain.com）を接続できます。
+# プレビュー
+npm run preview
+```
 
-プロジェクト設定のDomainsセクションから設定してください。
+### バックエンド
+
+Supabase Edge Functionsは、Supabase CLIを使用してデプロイします。
+
+```sh
+# Edge Functionsをデプロイ
+npx supabase functions deploy
+```
+
+## 環境変数
+
+以下の環境変数を設定してください：
+
+- `VITE_SUPABASE_URL`: SupabaseプロジェクトのURL
+- `VITE_SUPABASE_PUBLISHABLE_KEY`: Supabaseの公開鍵
+- `STRIPE_SECRET_KEY`: Stripeのシークレットキー（バックエンド用）
+- `OPENAI_API_KEY`: OpenAI APIキー（文字起こし機能用）
+- `RESEND_API_KEY`: Resend APIキー（メール送信用）
 
 ## ライセンスとサポート
 
