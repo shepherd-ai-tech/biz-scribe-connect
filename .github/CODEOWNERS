@@ -1,24 +1,24 @@
-# バックエンドファイルの所有者設定
-# これらのファイルへの変更は、指定された所有者の承認が必要です
+# Backend files ownership
+# Changes to these files require approval from specified owners
 
-# Supabase関連（Edge Functions、マイグレーション、設定）
+# Backend (Edge Functions, migrations, configuration)
 /supabase/ @shepherd-ai-tech
 
-# 環境変数とシークレット
+# Environment variables and secrets
 /.env @shepherd-ai-tech
 /.env.* @shepherd-ai-tech
 
-# パッケージ管理（バックエンド依存関係の変更を制限）
+# Package management (restrict backend dependency changes)
 /package.json @shepherd-ai-tech
 /package-lock.json @shepherd-ai-tech
 /bun.lockb @shepherd-ai-tech
 
-# TypeScript設定（型安全性の維持）
+# TypeScript configuration (maintain type safety)
 /tsconfig*.json @shepherd-ai-tech
 
-# Supabase型定義（自動生成ファイル）
+# Database type definitions (auto-generated)
 /src/integrations/supabase/ @shepherd-ai-tech
 
-# 重要な設定ファイル
+# Critical configuration files
 /vite.config.ts @shepherd-ai-tech
 /components.json @shepherd-ai-tech
