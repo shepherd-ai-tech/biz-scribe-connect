@@ -20,13 +20,13 @@ serve(async (req) => {
     const coupons = await stripe.coupons.list({ limit: 10 });
     console.log("Existing coupons:", coupons.data);
 
-    // "dfree"というプロモーションコードが既に存在するか確認
-    const existingPromoCodes = await stripe.promotionCodes.list({ code: "dfree" });
+    // "free"というプロモーションコードが既に存在するか確認
+    const existingPromoCodes = await stripe.promotionCodes.list({ code: "free" });
     
     if (existingPromoCodes.data.length > 0) {
       return new Response(
         JSON.stringify({ 
-          message: "プロモーションコード 'dfree' は既に存在します",
+          message: "プロモーションコード 'free' は既に存在します",
           promotionCode: existingPromoCodes.data[0]
         }), 
         {
@@ -40,13 +40,13 @@ serve(async (req) => {
     const universalCoupon = await stripe.coupons.create({
       percent_off: 100,
       duration: "once",
-      name: "dfree - 全額無料クーポン",
+      name: "free - 全額無料クーポン",
     });
 
-    // "dfree"プロモーションコードを作成
+    // "free"プロモーションコードを作成
     const promotionCode = await stripe.promotionCodes.create({
       coupon: universalCoupon.id,
-      code: "dfree",
+      code: "free",
       active: true,
     });
 
@@ -55,8 +55,8 @@ serve(async (req) => {
         success: true,
         coupon: universalCoupon,
         promotionCode: promotionCode,
-        message: "プロモーションコード 'dfree' が作成されました"
-      }), 
+        message: "プロモーションコード 'free' が作成されました"
+      }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
