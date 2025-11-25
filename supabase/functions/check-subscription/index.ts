@@ -17,9 +17,11 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  // サービスロールキーでSupabaseクライアントを初期化（ホワイトリストチェック用）
   const supabaseClient = createClient(
     Deno.env.get("SUPABASE_URL") ?? "",
-    Deno.env.get("SUPABASE_ANON_KEY") ?? ""
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+    { auth: { persistSession: false } }
   );
 
   try {
@@ -38,6 +40,28 @@ serve(async (req) => {
     if (!user?.email) throw new Error("ユーザーが認証されていません");
 
     logStep("ユーザー認証完了", { userId: user.id, email: user.email });
+
+    // ホワイトリストチェック
+    const { data: whitelistData, error: whitelistError } = await supabaseClient
+      .from('whitelisted_users')
+      .select('email')
+      .eq('email', user.email)
+      .maybeSingle();
+
+    if (whitelistData) {
+      logStep("ホワイトリストユーザー検出 - 支払いをバイパス", { email: user.email });
+      return new Response(JSON.stringify({
+        subscribed: true,
+        initial_payment_completed: true,
+        subscription_end: null,
+        whitelisted: true
+      }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        status: 200,
+      });
+    }
+
+    logStep("ホワイトリストに未登録 - Stripe支払いをチェック");
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
