@@ -62,34 +62,12 @@ export function PaymentProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const checkPaymentStatus = async () => {
-    try {
-      setPaymentStatus(prev => ({ ...prev, loading: true }));
-      const { data, error } = await supabase.functions.invoke("check-subscription");
-      
-      if (error) {
-        console.error("支払いステータスの取得エラー:", error);
-        setPaymentStatus({
-          subscribed: false,
-          initial_payment_completed: false,
-          loading: false,
-        });
-        return;
-      }
-      
-      setPaymentStatus({
-        subscribed: data.subscribed || false,
-        initial_payment_completed: data.initial_payment_completed || false,
-        subscription_end: data.subscription_end,
-        loading: false,
-      });
-    } catch (error) {
-      console.error("支払いステータスチェックエラー:", error);
-      setPaymentStatus({
-        subscribed: false,
-        initial_payment_completed: false,
-        loading: false,
-      });
-    }
+    // 支払いチェックをバイパス - すべてのユーザーに全機能へのアクセスを許可
+    setPaymentStatus({
+      subscribed: true,
+      initial_payment_completed: true,
+      loading: false,
+    });
   };
 
   const refreshPaymentStatus = async () => {
