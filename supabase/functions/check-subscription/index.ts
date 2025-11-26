@@ -25,9 +25,6 @@ serve(async (req) => {
   try {
     logStep("サブスクリプションチェック開始");
 
-    const stripeKey = Deno.env.get("STRIPE_SECRET_KEY");
-    if (!stripeKey) throw new Error("STRIPE_SECRET_KEYが設定されていません");
-
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("認証ヘッダーがありません");
 
@@ -39,61 +36,13 @@ serve(async (req) => {
 
     logStep("ユーザー認証完了", { userId: user.id, email: user.email });
 
-    const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
-    const customers = await stripe.customers.list({ email: user.email, limit: 1 });
-    
-    if (customers.data.length === 0) {
-      logStep("顧客が見つかりません");
-      return new Response(JSON.stringify({ 
-        subscribed: false,
-        initial_payment_completed: false 
-      }), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-        status: 200,
-      });
-    }
-
-    const customerId = customers.data[0].id;
-    logStep("Stripe顧客が見つかりました", { customerId });
-
-    // アクティブなサブスクリプションをチェック
-    const subscriptions = await stripe.subscriptions.list({
-      customer: customerId,
-      status: "active",
-      limit: 1,
-    });
-    const hasActiveSub = subscriptions.data.length > 0;
-    let subscriptionEnd = null;
-
-    if (hasActiveSub) {
-      const subscription = subscriptions.data[0];
-      subscriptionEnd = new Date(subscription.current_period_end * 1000).toISOString();
-      logStep("アクティブなサブスクリプションが見つかりました", { 
-        subscriptionId: subscription.id, 
-        endDate: subscriptionEnd 
-      });
-    }
-
-    // 初期費用の支払いをチェック
-    const payments = await stripe.paymentIntents.list({
-      customer: customerId,
-      limit: 100,
-    });
-    
-    const initialPaymentCompleted = payments.data.some(
-      (payment: Stripe.PaymentIntent) => payment.status === "succeeded" && payment.amount === 100000
-    );
-
-    logStep("支払い状況", { 
-      subscribed: hasActiveSub, 
-      initialPaymentCompleted,
-      subscriptionEnd 
-    });
+    // 支払いチェックをバイパス - すべてのユーザーに全機能へのアクセスを許可
+    logStep("全ユーザーにアクセスを許可");
 
     return new Response(JSON.stringify({
-      subscribed: hasActiveSub,
-      initial_payment_completed: initialPaymentCompleted,
-      subscription_end: subscriptionEnd
+      subscribed: true,
+      initial_payment_completed: true,
+      subscription_end: null
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
