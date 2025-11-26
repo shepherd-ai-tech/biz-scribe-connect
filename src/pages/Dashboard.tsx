@@ -2,12 +2,10 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, FileText, AlertCircle } from "lucide-react";
+import { LogOut, Users, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomersTab } from "@/components/dashboard/CustomersTab";
 import { MeetingRecordsTab } from "@/components/dashboard/MeetingRecordsTab";
-import { usePayment } from "@/contexts/PaymentContext";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
