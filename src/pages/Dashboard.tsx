@@ -2,29 +2,19 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { LogOut, Users, FileText, AlertCircle } from "lucide-react";
+import { LogOut, Users, FileText } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CustomersTab } from "@/components/dashboard/CustomersTab";
 import { MeetingRecordsTab } from "@/components/dashboard/MeetingRecordsTab";
-import { usePayment } from "@/contexts/PaymentContext";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2 } from "lucide-react";
 
 export default function Dashboard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
-  const { hasAccess, paymentStatus } = usePayment();
 
   useEffect(() => {
     checkUser();
   }, []);
-
-  useEffect(() => {
-    // 支払いが完了していない場合、支払い設定ページへリダイレクト
-    if (!loading && !paymentStatus.loading && !hasAccess) {
-      navigate("/payment-setup");
-    }
-  }, [hasAccess, loading, paymentStatus.loading, navigate]);
 
   const checkUser = async () => {
     const { data: { session } } = await supabase.auth.getSession();
@@ -39,17 +29,12 @@ export default function Dashboard() {
     navigate("/");
   };
 
-  if (loading || paymentStatus.loading) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="w-12 h-12 animate-spin text-primary" />
       </div>
     );
-  }
-
-  // 支払いが完了していない場合は何も表示しない（リダイレクト処理中）
-  if (!hasAccess) {
-    return null;
   }
 
   return (
